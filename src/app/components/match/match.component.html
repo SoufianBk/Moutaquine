@@ -1,0 +1,21 @@
+<div class="mb-3">
+  <form (ngSubmit)="submitResult()">
+    <div class="row align-items-center g-2">
+      <div class="col-12 col-sm-auto text-center text-sm-start">
+        {{ match.teamA }}
+      </div>
+      <div class="col-6 col-sm-2">
+        <input [(ngModel)]="match.scoreA" name="scoreA{{match.teamA}}" class="form-control form-control-sm text-center" type="number" placeholder="0">
+      </div>
+      <div class="col-6 col-sm-2">
+        <input [(ngModel)]="match.scoreB" name="scoreB{{match.teamB}}" class="form-control form-control-sm text-center" type="number" placeholder="0">
+      </div>
+      <div class="col-12 col-sm-auto text-center text-sm-start">
+        {{ match.teamB }}
+      </div>
+      <div class="col-12 col-sm-auto text-center text-sm-start">
+        <button type="submit" class="btn btn-sm btn-primary w-100">OK</button>
+      </div>
+    </div>
+  </form>
+</div>
