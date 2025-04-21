@@ -1,0 +1,41 @@
+<div class="container-fluid">
+    <h1 class="text-center display-8 fw-bold text-titre">
+        Mosquée Al Moutaquine – Tournoi
+    </h1>
+
+    <div class="text-end mb-2">
+        <button
+            class="btn btn-outline-secondary btn-sm"
+            *ngIf="!adminMode"
+            (click)="enableAdmin()">
+            🔑 Mode Admin
+        </button>
+        <button
+            class="btn btn-outline-danger btn-sm"
+            *ngIf="adminMode"
+            (click)="disableAdmin()">
+            🚪 Quitter Admin
+        </button>
+    </div>
+
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div *ngIf="showToast" class="toast show bg-dark text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ toastMessage }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close" (click)="showToast = false"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Affichage des poules -->
+    <div class="row">
+        <div class="col-md-6 mb-4" *ngFor="let poule of poules">
+            <app-poule [poule]="poule" [adminMode]="adminMode"></app-poule>
+        </div>
+    </div>
+
+    <app-final-phase [adminMode]="adminMode"></app-final-phase>
+
+</div>

@@ -16,7 +16,8 @@ export class PouleComponent implements OnInit {
     @Input() poule: string = '';
     @Input() adminMode: boolean = false;
     db = inject(Database);
-
+    toastMessage = '';
+    showToast = false;
     teams: Team[] = [];
     matches: Match[] = [];
 
@@ -107,7 +108,56 @@ export class PouleComponent implements OnInit {
 
         set(ref(this.db, `poules/${this.poule}/teams`), this.teams);
         set(ref(this.db, `poules/${this.poule}/matches`), this.matches);
+
+        this.updateFinalPhaseQuartsOnly();
     }
 
+    updateFinalPhaseQuartsOnly() {
+        const poules = ['A', 'B', 'C', 'D'];
+        const teamsByPoule: any = {};
+        let loaded = 0;
 
+        poules.forEach(poule => {
+            const refTeams = ref(this.db, `poules/${poule}/teams`);
+            onValue(refTeams, snapshot => {
+                const teams = snapshot.val();
+                if (teams) {
+                    const sorted = teams.sort((a: any, b: any) => {
+                        if (b.points !== a.points) return b.points - a.points;
+                        const gaB = b.goalsFor - b.goalsAgainst;
+                        const gaA = a.goalsFor - a.goalsAgainst;
+                        return gaB - gaA;
+                    });
+                    teamsByPoule[poule] = sorted.map((t: any) => t.name);
+                }
+
+                loaded++;
+                if (loaded === poules.length) {
+                    const updatedQuarts = [
+                        { teamA: teamsByPoule['A'][0], teamB: teamsByPoule['B'][1], scoreA: null, scoreB: null },
+                        { teamA: teamsByPoule['C'][0], teamB: teamsByPoule['D'][1], scoreA: null, scoreB: null },
+                        { teamA: teamsByPoule['B'][0], teamB: teamsByPoule['A'][1], scoreA: null, scoreB: null },
+                        { teamA: teamsByPoule['D'][0], teamB: teamsByPoule['C'][1], scoreA: null, scoreB: null }
+                    ];
+                    set(ref(this.db, 'finalPhase/0/matches'), updatedQuarts);
+                }
+            }, { onlyOnce: true });
+        });
+    }
+
+    updateMatchTime(match: Match) {
+        // Met à jour la liste entière avec le nouveau match.time
+        set(ref(this.db, `poules/${this.poule}/matches`), this.matches)
+            .then(() => this.showToastMessage('🕒 Heure du match mise à jour'))
+            .catch(() => this.showToastMessage('❌ Erreur lors de la mise à jour'));
+    }
+
+    showToastMessage(message: string) {
+        this.toastMessage = message;
+        this.showToast = true;
+
+        setTimeout(() => {
+            this.showToast = false;
+        }, 3000);
+    }
 }

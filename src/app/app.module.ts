@@ -7,6 +7,8 @@ import { PouleComponent } from './components/poule/poule.component';
 import { MatchComponent } from './components/match/match.component';
 import { FinaleComponent } from './components/finale/finale.component';
 import { HomeComponent } from './components/home/home.component';
+import { TournoiComponent } from './components/tournoi/tournoi.component';
+import {RouterLink} from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -14,12 +16,14 @@ import { HomeComponent } from './components/home/home.component';
     PouleComponent,
     MatchComponent,
     FinaleComponent,
-    HomeComponent
+    HomeComponent,
+    TournoiComponent
   ],
-  imports: [
-    BrowserModule,
-    FormsModule
-  ],
+    imports: [
+        BrowserModule,
+        FormsModule,
+        RouterLink
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

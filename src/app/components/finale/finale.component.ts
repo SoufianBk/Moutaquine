@@ -1,82 +1,75 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Match } from '../../models/match.model';
-import { Database, ref, get } from '@angular/fire/database';
-import {RouterLink} from '@angular/router';
+import { Component, Input, inject, OnInit } from '@angular/core';
+import { Database, ref, onValue, set } from '@angular/fire/database';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {MatchComponent} from '../match/match.component';
 
 @Component({
-    selector: 'app-finale',
+    selector: 'app-final-phase',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterLink],
-    templateUrl: './finale.component.html'
+    imports: [CommonModule, FormsModule],
+    templateUrl: 'finale.component.html'
 })
 export class FinaleComponent implements OnInit {
-    adminMode = false;
+    @Input() adminMode = false;
     db = inject(Database);
-
-    bracket: Match[][] = [
-        [], // Quart
-        [ new Match('', '', '15:00'), new Match('', '', '16:00') ], // Demi
-        [ new Match('', '', '17:00') ] // Finale
-    ];
+    knockoutPhases: any[] = [];
+    winner: string | null = null;
 
     ngOnInit() {
-        this.generateQuarterFinals();
+        const phasesRef = ref(this.db, 'finalPhase');
+        onValue(phasesRef, snapshot => {
+            this.knockoutPhases = snapshot.val();
+            this.determineWinner();
+        });
     }
 
-    async generateQuarterFinals() {
-        const poules = ['A', 'B', 'C', 'D'];
-        const results: { [key: string]: string[] } = {};
+    saveMatchResult(phaseIndex: number, matchIndex: number) {
+        const match = this.knockoutPhases[phaseIndex].matches[matchIndex];
+        const matchRef = ref(this.db, `finalPhase/${phaseIndex}/matches/${matchIndex}`);
 
-        for (const poule of poules) {
-            const snapshot = await get(ref(this.db, `poules/${poule}/teams`));
-            const teams = snapshot.val();
-            if (!teams) continue;
-
-            const sorted = teams
-                .sort((a: any, b: any) =>
-                    b.points - a.points || b.goalAverage - a.goalAverage
-                );
-            results[poule] = [sorted[0].name, sorted[1].name];
-        }
-
-        // Adaptable organisation ici
-        this.bracket[0] = [
-            new Match(results['A']?.[0] || '', results['B']?.[1] || '', '10:00'),
-            new Match(results['C']?.[0] || '', results['D']?.[1] || '', '11:00'),
-            new Match(results['B']?.[0] || '', results['A']?.[1] || '', '12:00'),
-            new Match(results['D']?.[0] || '', results['C']?.[1] || '', '13:00')
-        ];
+        set(matchRef, match).then(() => {
+            this.updateNextPhaseTeams();
+            this.determineWinner();
+        });
     }
 
-    updateBracket() {
-        for (let i = 0; i < 2; i++) {
-            const m1 = this.bracket[0][i * 2];
-            const m2 = this.bracket[0][i * 2 + 1];
-            const semi = this.bracket[1][i];
+    updateNextPhaseTeams() {
+        for (let i = 0; i < this.knockoutPhases.length - 1; i++) {
+            const current = this.knockoutPhases[i];
+            const next = this.knockoutPhases[i + 1];
 
-            if (m1?.isPlayed && m2?.isPlayed) {
-                semi.teamA = m1.scoreA! > m1.scoreB! ? m1.teamA : m1.teamB;
-                semi.teamB = m2.scoreA! > m2.scoreB! ? m2.teamA : m2.teamB;
-            }
+            current.matches.forEach((match: any, idx: number) => {
+                const scoreA = match.scoreA;
+                const scoreB = match.scoreB;
+                const targetMatch = next.matches[Math.floor(idx / 2)];
+                const targetSlot = idx % 2 === 0 ? 'teamA' : 'teamB';
+
+                if (scoreA === null || scoreB === null || scoreA === scoreB) {
+                    targetMatch[targetSlot] = '?';
+                } else {
+                    targetMatch[targetSlot] = scoreA > scoreB ? match.teamA : match.teamB;
+                }
+            });
         }
 
-        const s1 = this.bracket[1][0];
-        const s2 = this.bracket[1][1];
-        const finale = this.bracket[2][0];
+        set(ref(this.db, 'finalPhase'), this.knockoutPhases);
+    }
 
-        if (s1?.isPlayed && s2?.isPlayed) {
-            finale.teamA = s1.scoreA! > s1.scoreB! ? s1.teamA : s1.teamB;
-            finale.teamB = s2.scoreA! > s2.scoreB! ? s2.teamA : s2.teamB;
+
+
+    determineWinner() {
+        const final = this.knockoutPhases[this.knockoutPhases.length - 1].matches[0];
+
+        if (
+            final.scoreA !== null &&
+            final.scoreB !== null &&
+            final.scoreA !== final.scoreB
+        ) {
+            this.winner = final.scoreA > final.scoreB ? final.teamA : final.teamB;
+        } else {
+            this.winner = null;
         }
     }
 
-    get winner(): string | null {
-        const final = this.bracket[2][0];
-        if (final.scoreA != null && final.scoreB != null) {
-            return final.scoreA > final.scoreB ? final.teamA : final.teamB;
-        }
-        return null;
-    }
 }

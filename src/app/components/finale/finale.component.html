@@ -1,95 +1,50 @@
-<div class="container-fluid my-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-success">Phase Finale</h2>
-        <a routerLink="/" class="btn btn-outline-success">⬅️ Retour aux Poules</a>
+<div class="container my-4">
+    <h2 class="mb-4 text-success fw-bold">Phase Finale</h2>
+
+    <div *ngFor="let phase of knockoutPhases; let phaseIndex = index;">
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white fw-bold">{{ phase.title }}</div>
+            <div class="card-body">
+                <div class="row text-center py-2" [ngClass]="{ 'border-bottom': !last }"
+                     *ngFor="let match of phase.matches; let matchIndex = index; let last = last">
+                    <div class="col-5">{{ match.teamA }}</div>
+                    <div class="col-2">vs</div>
+                    <div class="col-5">{{ match.teamB }}</div>
+
+                    <div class="col-12 mt-2 text-center">
+                        <ng-container *ngIf="adminMode; else result">
+                            <div class="d-inline-flex flex-wrap justify-content-center align-items-center gap-2">
+                                <input type="number"
+                                       [(ngModel)]="match.scoreA"
+                                       class="form-control form-control-sm text-center"
+                                       style="width: 90px;">
+
+                                <span>-</span>
+
+                                <input type="number"
+                                       [(ngModel)]="match.scoreB"
+                                       class="form-control form-control-sm text-center"
+                                       style="width: 90px;">
+
+                                <button class="btn btn-success btn-sm" (click)="saveMatchResult(phaseIndex, matchIndex)">
+                                    OK
+                                </button>
+                            </div>
+                        </ng-container>
+
+                        <ng-template #result>
+                            <strong *ngIf="match.scoreA !== null && match.scoreB !== null">
+                                {{ match.scoreA }} - {{ match.scoreB }}
+                            </strong>
+                        </ng-template>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="d-flex justify-content-center align-items-center bracket">
-        <!-- Quart de finale -->
-        <div class="round">
-            <div class="match">A1 vs B2</div>
-            <div class="match">C1 vs D2</div>
-            <div class="match">B1 vs A2</div>
-            <div class="match">D1 vs C2</div>
-        </div>
-
-        <!-- Ligne Quarts → Demis -->
-        <div class="connector-container">
-            <div class="connector"></div>
-            <div class="connector"></div>
-        </div>
-
-        <!-- Demi-finale -->
-        <div class="round">
-            <div class="match">Vainqueur Q1 vs Vainqueur Q2</div>
-            <div class="match">Vainqueur Q3 vs Vainqueur Q4</div>
-        </div>
-
-        <!-- Ligne Demis → Finale -->
-        <div class="connector-container final">
-            <div class="connector single"></div>
-        </div>
-
-        <!-- Finale -->
-        <div class="round">
-            <div class="match">Vainqueur D1 vs Vainqueur D2</div>
-        </div>
-    </div>
-
-    <!-- Vainqueur -->
-    <div class="text-center mt-4">
-        <h4 class="text-success">🏆 Vainqueur du Tournoi : ?</h4>
+    <div class="text-center mt-4" *ngIf="winner">
+        <h4 class="text-success">🏆 Vainqueur du Tournoi : {{ winner }}</h4>
     </div>
 </div>
-
-<style>
-    .bracket {
-        position: relative;
-        display: flex;
-        gap: 20px;
-    }
-
-    .round {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-        gap: 40px;
-    }
-
-    .match {
-        width: 160px;
-        padding: 10px;
-        border: 1px solid #aaa;
-        border-radius: 4px;
-        text-align: center;
-        background: #fff;
-    }
-
-    .connector-container {
-        position: relative;
-        width: 40px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-    }
-
-    .connector {
-        position: relative;
-        width: 100%;
-        height: 80px;
-        border-right: 2px solid #aaa;
-        border-top: 2px solid #aaa;
-        border-bottom: 2px solid #aaa;
-    }
-
-    .connector.single {
-        height: 0;
-        top: 50%;
-        border-top: 2px solid #aaa;
-        border-bottom: none;
-    }
-
-    .connector-container.final {
-        justify-content: center;
-    }
-</style>

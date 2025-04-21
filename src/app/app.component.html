@@ -1,1 +1,40 @@
-<router-outlet></router-outlet>
+<div class="container px-0 px-md-4 mt-5 mb-2 pt-5">
+    <div class="card shadow-sm p-0 rounded-0" style="background-color: #f5f5dc">
+        <nav
+            class="navbar navbar-expand-lg fixed-top shadow-sm pb-2"
+            [ngClass]="{ 'navbar-scrolled': isScrolled, 'navbar-expanded': !isScrolled }">
+            <div class="container justify-content-between align-items-center">
+                <a class="navbar-brand d-flex align-items-center" routerLink="/">
+                    <img
+                        src="logo_mosquee.png"
+                        [ngClass]="{ 'logo-scrolled': isScrolled, 'logo-expanded': !isScrolled }"
+                        alt="Logo"/>
+                    <div class="ms-2 d-flex flex-column lh-sm">
+                        <span style="font-size: 0.85rem;" class="text-logo">Mosquée</span>
+                        <strong class="mb-0 fs-5 text-logo">Al Moutaquine</strong>
+                    </div>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse justify-content-end" id="mainNav">
+                    <ul class="navbar-nav p-3 rounded">
+                        <li class="nav-item"><a routerLink="/" class="nav-link text-logo fw-bold">ACCUEIL</a></li>
+                        <li class="nav-item"><a routerLink="/tournoi" class="nav-link text-logo">TOURNOI</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+
+        <!-- CONTENU -->
+        <div class="pt-3 px-2 px-md-4">
+            <router-outlet></router-outlet>
+        </div>
+
+    </div>
+</div>
+
+

@@ -1,5 +1,5 @@
 <div class="card">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-poule fw-bold text-white">
         <h5 class="mb-0">Poule {{ poule }}</h5>
     </div>
     <div class="card-body">
@@ -15,8 +15,6 @@
                         <th>G</th>
                         <th>N</th>
                         <th>P</th>
-                        <th>+</th>
-                        <th>-</th>
                         <th>GA</th>
                         <th>Pts</th>
                     </tr>
@@ -29,8 +27,6 @@
                         <td>{{ team.wins }}</td>
                         <td>{{ team.draws }}</td>
                         <td>{{ team.losses }}</td>
-                        <td>{{ team.goalsFor }}</td>
-                        <td>{{ team.goalsAgainst }}</td>
                         <td>{{ team.goalAverage }}</td>
                         <td>{{ team.points }}</td>
                     </tr>
@@ -40,15 +36,40 @@
             <div class="col-md-6">
                 <h6>Matchs</h6>
                 <ul class="list-group">
-                    <li *ngFor="let match of matches" class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                            <strong>{{ match.time }}</strong><br>
-                            {{ match.teamA }} vs {{ match.teamB }}
-                        </span>
-                        <span *ngIf="match.isPlayed" class="badge bg-light text-muted border">{{ match.statusIcon }} {{ match.scoreDisplay }}</span>
-                        <span *ngIf="!match.isPlayed" class="text-muted">🕒 À jouer</span>
+                    <li *ngFor="let match of matches" class="list-group-item">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+
+                            <div class="mb-2 mb-md-0">
+                                <ng-container *ngIf="adminMode; else readonlyTime">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="time"
+                                               [(ngModel)]="match.time"
+                                               class="form-control form-control-sm"
+                                               style="width: 120px;">
+                                        <button class="btn btn-outline-primary btn-sm"
+                                                (click)="updateMatchTime(match)">
+                                            OK
+                                        </button>
+                                    </div>
+                                </ng-container>
+
+                                <ng-template #readonlyTime>
+                                    <strong>{{ match.time }}</strong><br>
+                                </ng-template>
+
+                                {{ match.teamA }} vs {{ match.teamB }}
+                            </div>
+
+                            <div>
+                                <span *ngIf="match.isPlayed" class="badge bg-light text-muted border">
+                                  {{ match.statusIcon }} {{ match.scoreDisplay }}
+                                </span>
+                                <span *ngIf="!match.isPlayed" class="text-muted">🕒 À jouer</span>
+                            </div>
+                        </div>
                     </li>
                 </ul>
+
                 <div *ngIf="adminMode" class="mt-3">
                     <h6>Encoder les résultats</h6>
                     <app-match
@@ -56,6 +77,17 @@
                         [match]="match"
                         (resultSubmitted)="updateMatchResult($event)">
                     </app-match>
+                </div>
+
+                <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                    <div *ngIf="showToast" class="toast show bg-dark text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                {{ toastMessage }}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close" (click)="showToast = false"></button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
